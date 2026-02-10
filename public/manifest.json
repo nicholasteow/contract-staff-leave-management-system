@@ -1,0 +1,20 @@
+{
+  "short_name": "LMS",
+  "name": "Leave Management System",
+  "icons": [
+    {
+      "src": "lms_logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "lms_logo.jpg",
+      "sizes": "1080x1080",
+      "type": "image/jpeg"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#007bff",
+  "background_color": "#ffffff"
+}
