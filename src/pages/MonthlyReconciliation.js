@@ -74,17 +74,25 @@ function MonthlyReconciliation() {
       
       // For demo: create synthetic parent company data
       const syntheticParentData = leaves.map(leave => {
-        // Simulate 5% variance (±) for demo
-        const variancePercent = (Math.random() * 10) - 5; // -5% to +5%
+        // Create a deterministic seed from month + company + staffId
+        const seed = `${selectedMonth}_${selectedCompany}_${leave.staffId}`;
+        let hash = 0;
+        for (let i = 0; i < seed.length; i++) {
+            hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+            hash = hash & hash; // Convert to 32-bit integer
+        }
+        
+        // Use the hash to generate consistent variance between -5% and +5%
+        const variancePercent = (Math.abs(hash) % 100) / 10 - 5; // -5.0 to +4.9
         const actualAmount = leave.calculatedCost * (1 + (variancePercent / 100));
         
         return {
-          ...leave,
-          actualAmount: Math.round(actualAmount),
-          variance: Math.round(actualAmount - leave.calculatedCost),
-          variancePercent: parseFloat(variancePercent.toFixed(1))
+            ...leave,
+            actualAmount: Math.round(actualAmount),
+            variance: Math.round(actualAmount - leave.calculatedCost),
+            variancePercent: parseFloat(variancePercent.toFixed(1))
         };
-      });
+        });
       
       setReconciliationData(syntheticParentData);
       setLoading(false);

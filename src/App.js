@@ -39,7 +39,7 @@ import ApprovalDashboard from './pages/ApprovalDashboard';
 import MyLeaves from './pages/MyLeaves'
 import MonthlyReconciliation from './pages/MonthlyReconciliation';
 import BillingVarianceDashboard from './pages/BillingVarianceDashboard';
-
+import HistoricalAuditTrail from './pages/HistoricalAuditTrail';
 // Remove these 3 imports for now:
 // import Reconciliation from './pages/Reconciliation';
 // import VarianceDashboard from './pages/VarianceDashboard';
@@ -57,6 +57,7 @@ function App() {
           <Route path="/my-leaves" element={<MyLeaves />} />
           <Route path="/monthly-reconciliation" element={<MonthlyReconciliation />} />
           <Route path="/variance-dashboard" element={<BillingVarianceDashboard />} />
+          <Route path="/audit-trail" element={<HistoricalAuditTrail />} />
           {/* Remove these 3 routes for now: */}
           {/* <Route path="/reconciliation" element={<Reconciliation />} /> */}
           {/* <Route path="/variance-dashboard" element={<VarianceDashboard />} /> */}

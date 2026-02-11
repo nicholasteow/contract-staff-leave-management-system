@@ -180,7 +180,7 @@ function Dashboard() {
                 Variance Dashboard
                 </button>
                 <button 
-                onClick={() => alert('Coming soon!')}
+                onClick={() => navigate('/audit-trail')}
                 style={{...styles.linkButton, backgroundColor: '#d00423'}} 
                 >
                 Audit Trail

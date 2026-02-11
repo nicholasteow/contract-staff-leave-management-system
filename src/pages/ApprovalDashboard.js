@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, query, getDocs, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
 
 function ApprovalDashboard() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [pendingApplications, setPendingApplications] = useState([]);
   const [processedApplications, setProcessedApplications] = useState([]);
@@ -140,40 +142,46 @@ function ApprovalDashboard() {
 
   const handleApprove = async (applicationId) => {
     try {
-      await updateDoc(doc(db, 'leaveApplications', applicationId), {
+        await updateDoc(doc(db, 'leaveApplications', applicationId), {
         status: 'approved_manager',
         managerApprovalDate: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-      
-      alert('Leave application approved!');
-      fetchAllLeaveApplications();
-      
+        updatedAt: serverTimestamp(),
+        // ✅ ADD THIS - store manager email from current user
+        managerEmail: currentUser?.email || 'unknown@example.com',
+        managerName: currentUser?.displayName || 'Manager'
+        });
+        
+        alert('Leave application approved!');
+        fetchAllLeaveApplications();
+        
     } catch (error) {
-      console.error('Error approving leave:', error);
-      alert('Failed to approve leave application.');
+        console.error('Error approving leave:', error);
+        alert('Failed to approve leave application.');
     }
-  };
+    };
 
-  const handleReject = async (applicationId) => {
+    const handleReject = async (applicationId) => {
     const reason = prompt('Please enter reason for rejection:');
     if (reason) {
-      try {
+        try {
         await updateDoc(doc(db, 'leaveApplications', applicationId), {
-          status: 'rejected',
-          rejectionReason: reason,
-          updatedAt: serverTimestamp()
+            status: 'rejected',
+            rejectionReason: reason,
+            updatedAt: serverTimestamp(),
+            // ✅ ADD THIS - store manager email from current user
+            managerEmail: currentUser?.email || 'unknown@example.com',
+            managerName: currentUser?.displayName || 'Manager'
         });
         
         alert('Leave application rejected!');
         fetchAllLeaveApplications();
         
-      } catch (error) {
+        } catch (error) {
         console.error('Error rejecting leave:', error);
         alert('Failed to reject leave application.');
-      }
+        }
     }
-  };
+    };
 
   const getStatusDisplay = (status) => {
     switch(status) {
