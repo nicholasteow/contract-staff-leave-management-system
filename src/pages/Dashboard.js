@@ -96,13 +96,13 @@ function Dashboard() {
             <p>Billing, reconciliation, and variance tracking</p>
             <div style={styles.buttonGroup}>
               <button 
-                onClick={() => alert('Reconciliation page coming soon!')}
+                onClick={() => navigate('/monthly-reconciliation')}
                 style={styles.primaryButton}
               >
                 Monthly Reconciliation
               </button>
               <button 
-                onClick={() => alert('Variance dashboard coming soon!')}
+                onClick={() => navigate('/variance-dashboard')}
                 style={styles.secondaryButton}
               >
                 Variance Dashboard
@@ -168,13 +168,13 @@ function Dashboard() {
             {userRole === 'finance' && (
             <>
                 <button 
-                onClick={() => alert('Coming soon!')}
+                onClick={() => navigate('/monthly-reconciliation')} 
                 style={{...styles.linkButton, backgroundColor: '#17a2b8'}} 
                 >
                 Reconciliation
                 </button>
                 <button 
-                onClick={() => alert('Coming soon!')}
+                onClick={() => navigate('/variance-dashboard')}
                 style={{...styles.linkButton, backgroundColor: '#6610f2'}} 
                 >
                 Variance Dashboard

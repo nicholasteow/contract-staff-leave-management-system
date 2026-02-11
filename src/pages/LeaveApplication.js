@@ -21,7 +21,7 @@ function LeaveApplication() {
   
   const leaveTypes = [
     { value: 'Annual Leave', label: 'Annual Leave (Chargeable)', chargeable: true },
-    { value: 'Medical (MC)', label: 'Medical Leave with MC (Chargeable)', chargeable: true },
+    { value: 'Medical (MC)', label: 'Medical Leave with MC (Non-Chargeable)', chargeable: false }, 
     { value: 'Medical (No MC)', label: 'Medical Leave without MC (Non-Chargeable)', chargeable: false },
     { value: 'Unpaid Leave', label: 'Unpaid Leave (Non-Chargeable)', chargeable: false },
     { value: 'Compassionate Leave', label: 'Compassionate Leave (Chargeable)', chargeable: true },
@@ -68,8 +68,10 @@ function LeaveApplication() {
       setLoading(true);
       setError('');
 
-      // GET USER'S ACTUAL NAME FROM USERS COLLECTION
-      let staffName = currentUser.email.split('@')[0]; // Default fallback
+      // 1. GET USER'S COMPLETE DATA FROM USERS COLLECTION
+      let staffName = currentUser.email.split('@')[0];
+      let parentCompany = ''; // NEW
+      let dailyRate = 0; // NEW
       
       try {
         const usersRef = collection(db, 'users');
@@ -78,18 +80,36 @@ function LeaveApplication() {
         
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
-          staffName = userDoc.data().name; // Get name from users collection
+          const userData = userDoc.data();
+          
+          staffName = userData.name; // Get name from users collection
+          parentCompany = userData.parentCompany; // NEW: Get company
+          dailyRate = userData.dailyRate || 0; // NEW: Get daily rate
+          
+          console.log('User data loaded:', { staffName, parentCompany, dailyRate });
+        } else {
+          setError('User profile not found. Please contact administrator.');
+          setLoading(false);
+          return;
         }
       } catch (userError) {
-        console.error('Error fetching user name:', userError);
-        // Use fallback name
+        console.error('Error fetching user data:', userError);
+        setError('Error loading user profile. Please try again.');
+        setLoading(false);
+        return;
       }
 
-      // Create leave application in Firestore
+      // 2. CREATE COMPLETE LEAVE APPLICATION DATA
       const leaveApplication = {
         staffId: currentUser.uid,
         staffEmail: currentUser.email,
-        staffName: staffName, // Use the fetched name
+        staffName: staffName,
+        
+        // NEW CRITICAL FIELDS:
+        parentCompany: parentCompany, // "ABC Staffing", "DEF Staffing", etc.
+        dailyRateAtLeave: dailyRate, // Snapshot of rate at time of leave
+        
+        // Existing fields:
         leaveType: formData.leaveType,
         isChargeable: selectedLeaveType.chargeable,
         startDate: formData.startDate,
@@ -97,11 +117,20 @@ function LeaveApplication() {
         totalDays: totalDays,
         reason: formData.reason,
         parentCompanyRefId: formData.parentCompanyRefId,
-        status: 'pending',
+        
+        // NEW: Calculate cost if chargeable
+        calculatedCost: selectedLeaveType.chargeable ? totalDays * dailyRate : 0,
+        
+        // Status should indicate it's with manager (not just "pending")
+        status: 'pending', // Changed from 'pending'
+        
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
 
+      console.log('Submitting leave application:', leaveApplication);
+      
+      // 3. WRITE TO FIRESTORE
       await addDoc(collection(db, 'leaveApplications'), leaveApplication);
       
       alert('Leave application submitted successfully!');
