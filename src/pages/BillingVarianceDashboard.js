@@ -190,21 +190,30 @@ function BillingVarianceDashboard() {
     fetchVarianceData();
   }, []);
 
-  // Get variance color
+  // ============ UPDATED VARIANCE LOGIC ============
+  // Get variance color - NEW LOGIC
   const getVarianceColor = (variance) => {
-    if (variance > 100) return '#28a745'; // Positive (green)
-    if (variance < -100) return '#dc3545'; // Negative (red)
-    return '#ffc107'; // Small variance (yellow)
+    const varianceAbs = Math.abs(variance);
+    
+    // Exactly zero = Green
+    if (variance === 0) return '#28a745';
+    
+    // Exceeds $500 threshold = Red
+    if (varianceAbs > 500) return '#dc3545';
+    
+    // Everything else = Yellow
+    return '#ffc107';
   };
 
-  // Get variance icon
+  // Get variance icon - NEW LOGIC
   const getVarianceIcon = (variance) => {
-    if (variance > 500) return '🔼'; // Large positive
-    if (variance < -500) return '🔽'; // Large negative
-    if (variance > 0) return '↗️'; // Small positive
-    if (variance < 0) return '↘️'; // Small negative
-    return '➡️'; // Neutral
+    const varianceAbs = Math.abs(variance);
+    
+    if (variance === 0) return '✅'; // Exact match
+    if (varianceAbs > 500) return '⚠️'; // Critical
+    return '⚡'; // Within threshold
   };
+  // ================================================
 
   // Format month for display
   const formatMonth = (monthId) => {
@@ -282,7 +291,7 @@ Check console for full email preview.`);
               />
             </div>
             
-            {/* Email Body - FIXED */}
+            {/* Email Body */}
             <div style={modalStyles.body}>
               <p>Dear Finance Team,</p>
               
@@ -308,7 +317,9 @@ Check console for full email preview.`);
                           <td style={modalStyles.td}>{c.period}</td>
                           <td style={{
                             ...modalStyles.td,
-                            color: c.variance >= 0 ? '#28a745' : '#dc3545',
+                            // ===== UPDATED EMAIL VARIANCE COLOR =====
+                            color: Math.abs(c.variance) > 500 ? '#dc3545' : 
+                                   c.variance === 0 ? '#28a745' : '#ffc107',
                             fontWeight: 'bold'
                           }}>
                             {c.variance >= 0 ? '+' : '-'}${c.amount} ({c.percent}%)
@@ -316,10 +327,13 @@ Check console for full email preview.`);
                           <td style={modalStyles.td}>
                             <span style={{
                               ...modalStyles.statusBadge,
-                              backgroundColor: c.variance >= 0 ? '#fff3cd' : '#f8d7da',
-                              color: c.variance >= 0 ? '#856404' : '#721c24'
+                              backgroundColor: Math.abs(c.variance) > 500 ? '#f8d7da' : 
+                                             c.variance === 0 ? '#d4edda' : '#fff3cd',
+                              color: Math.abs(c.variance) > 500 ? '#721c24' : 
+                                    c.variance === 0 ? '#155724' : '#856404'
                             }}>
-                              {c.direction}
+                              {Math.abs(c.variance) > 500 ? 'Critical' : 
+                               c.variance === 0 ? 'Exact' : c.direction}
                             </span>
                           </td>
                         </tr>
@@ -416,8 +430,10 @@ Check console for full email preview.`);
                 ${Math.abs(summaryStats.totalVariance).toLocaleString()}
               </div>
               <div style={styles.summaryLabel}>Total Variance</div>
+              {/* ===== UPDATED SUMMARY STATS TEXT ===== */}
               <div style={styles.summarySubtext}>
-                {summaryStats.totalVariance >= 0 ? 'Overbilled' : 'Underbilled'}
+                {Math.abs(summaryStats.totalVariance) > 500 ? 'Critical Variance' : 
+                 summaryStats.totalVariance === 0 ? 'Exact Match' : 'Minor Variance'}
               </div>
             </div>
           </div>
@@ -545,8 +561,10 @@ Check console for full email preview.`);
                           <strong>
                             ${Math.abs(item.totalVariance).toLocaleString()}
                           </strong>
+                          {/* ===== UPDATED VARIANCE DIRECTION TEXT ===== */}
                           <div style={styles.varianceDirection}>
-                            {item.totalVariance >= 0 ? 'Over' : 'Under'} billed
+                            {item.totalVariance === 0 ? 'Exact match' : 
+                             item.totalVariance > 0 ? 'Underbilled' : 'Overbilled'} 
                           </div>
                         </div>
                       </td>
